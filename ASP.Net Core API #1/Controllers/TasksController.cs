@@ -31,9 +31,10 @@ namespace ASP.Net_Core_API__1.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTask(Job job)
+        public IActionResult CreateTask(string job)
         {
-            var job = _jobServices.Create(job)
+            var newJob = _jobServices.Create(job);
+            return CreatedAtAction("GetTask", new { id = newJob.Id.ToString() }, newJob);
         }
     }
 }
