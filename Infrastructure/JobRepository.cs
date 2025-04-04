@@ -1,9 +1,8 @@
-﻿using ASP.Net_Core_API__1.Exceptions;
-using ASP.Net_Core_API__1.Interfaces.Repositories;
-using ASP.Net_Core_API__1.Models;
-using System.Data.SqlTypes;
+﻿using Application.Interfaces;
+using Domain.Exceptions;
+using Domain.Models;
 
-namespace ASP.Net_Core_API__1.Repositories
+namespace Infrastructure
 {
     public class JobRepository : IJobRepository
     {
@@ -54,6 +53,11 @@ namespace ASP.Net_Core_API__1.Repositories
             var job = _jobs.FirstOrDefault(job => job.Id.Equals(Guid.Parse(id)));
             if (job == null) throw new JobNotFoundException();
             _jobs.Remove(job);
+        }
+
+        public bool Any(Func<Job, bool> predicate)
+        {
+            return _jobs.Any(predicate);
         }
     }
 }

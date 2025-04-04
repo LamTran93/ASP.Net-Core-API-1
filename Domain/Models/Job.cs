@@ -1,4 +1,4 @@
-﻿namespace ASP.Net_Core_API__1.Models
+﻿namespace Domain.Models
 {
     public class Job
     {

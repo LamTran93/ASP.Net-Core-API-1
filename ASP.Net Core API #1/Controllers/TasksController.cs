@@ -1,6 +1,6 @@
-﻿using ASP.Net_Core_API__1.Interfaces.Services;
-using ASP.Net_Core_API__1.Models;
-using Microsoft.AspNetCore.Http;
+﻿using Application.Interfaces;
+using ASP.Net_Core_API__1.DTO;
+using Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ASP.Net_Core_API__1.Controllers
@@ -19,7 +19,8 @@ namespace ASP.Net_Core_API__1.Controllers
         [HttpGet]
         public IActionResult GetTasks()
         {
-            return Ok(_jobServices.GetJobs());
+            var jobs = _jobServices.GetJobs().Select(job => new JobDTO(job)).ToList();
+            return Ok(jobs);
         }
 
         [HttpGet("{id}")]
@@ -27,14 +28,83 @@ namespace ASP.Net_Core_API__1.Controllers
         {
             var job = _jobServices.GetById(id);
             if (job == null) return BadRequest();
-            return Ok(job);
+            return Ok(new JobDTO(job));
         }
 
         [HttpPost]
         public IActionResult CreateTask(string job)
         {
-            var newJob = _jobServices.Create(job);
-            return CreatedAtAction("GetTask", new { id = newJob.Id.ToString() }, newJob);
+            try
+            {
+                var newJob = _jobServices.Create(job);
+                return CreatedAtAction("GetTask", new { id = newJob.Id.ToString() }, new JobDTO(newJob));
+            }
+            catch (InvalidJobException)
+            {
+                return BadRequest("Invalid job");
+            }
+            catch (JobExistedException)
+            {
+                return Conflict("Job already exists");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateTask(string id, [FromBody] JobDTO job)
+        {
+            if (id != job.Id) return BadRequest("Id not matched");
+            try
+            {
+                _jobServices.UpdateJob(id, job.ToJob());
+                return NoContent();
+            }
+            catch (JobNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteTask(string id)
+        {
+            try
+            {
+                _jobServices.Delete(id);
+                return NoContent();
+            }
+            catch (JobNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost("bulk")]
+        public IActionResult CreateTasks([FromBody] List<string> jobs)
+        {
+            try
+            {
+                var addedJobs = _jobServices.CreateJobs(jobs);
+                return Ok(addedJobs.Select(job => new JobDTO(job)).ToList());
+            }
+            catch (InvalidJobException ex)
+            {
+                return BadRequest($"Invalid job: {ex.Message}");
+            }
+            catch (JobExistedException ex)
+            {
+                return Conflict($"Job already exists: {ex.Message}");
+            }
+            catch (DuplicatedJobException ex)
+            {
+                return BadRequest($"Duplicated job: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("bulk")]
+        public IActionResult DeleteTasks([FromBody] List<string> idList)
+        {
+            _jobServices.DeleteJobs(idList);
+            return NoContent();
         }
     }
 }

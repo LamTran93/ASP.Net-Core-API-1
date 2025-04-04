@@ -1,6 +1,6 @@
-﻿using ASP.Net_Core_API__1.Models;
+﻿using Domain.Models;
 
-namespace ASP.Net_Core_API__1.Interfaces.Repositories
+namespace Application.Interfaces
 {
     public interface IJobRepository
     {
@@ -10,5 +10,6 @@ namespace ASP.Net_Core_API__1.Interfaces.Repositories
         public Job? GetById(string id);
         public void Delete(string id);
         public void Update(Job updatedJob);
+        public bool Any(Func<Job, bool> predicate);
     }
 }
