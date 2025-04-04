@@ -1,6 +1,7 @@
 <h1>How to run</h1>
 
 Use dotnet CLI to run the project. In ASP.NET Core API #1 run the command <code>dotnet run</code>. Or use the Visual Studio to run the project.
+Test the project with Swagger: https://localhost:7067/swagger/index.html
 
 <h1>Structure</h1>
 
