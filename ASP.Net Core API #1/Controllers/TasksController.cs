@@ -43,7 +43,7 @@ namespace ASP.Net_Core_API__1.Controllers
             {
                 return BadRequest("Invalid job");
             }
-            catch (JobExistedException)
+            catch (ExistedException)
             {
                 return Conflict("Job already exists");
             }
@@ -58,7 +58,7 @@ namespace ASP.Net_Core_API__1.Controllers
                 _jobServices.UpdateJob(id, job.ToJob());
                 return NoContent();
             }
-            catch (JobNotFoundException)
+            catch (NotFoundException)
             {
                 return NotFound();
             }
@@ -72,7 +72,7 @@ namespace ASP.Net_Core_API__1.Controllers
                 _jobServices.Delete(id);
                 return NoContent();
             }
-            catch (JobNotFoundException)
+            catch (NotFoundException)
             {
                 return NotFound();
             }
@@ -90,7 +90,7 @@ namespace ASP.Net_Core_API__1.Controllers
             {
                 return BadRequest($"Invalid job: {ex.Message}");
             }
-            catch (JobExistedException ex)
+            catch (ExistedException ex)
             {
                 return Conflict($"Job already exists: {ex.Message}");
             }

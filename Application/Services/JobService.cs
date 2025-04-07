@@ -16,7 +16,7 @@ namespace Application.Services
         public void UpdateJob(string id, Job job)
         {
             var existingJob = _repository.GetById(id);
-            if (existingJob == null) throw new JobNotFoundException();
+            if (existingJob == null) throw new NotFoundException();
             existingJob.Title = job.Title;
             existingJob.IsCompleted = job.IsCompleted;
         }
@@ -29,7 +29,7 @@ namespace Application.Services
             }
             if (IsExisted(job))
             {
-                throw new JobExistedException($"Job \"{job}\" is existed");
+                throw new ExistedException($"Job \"{job}\" is existed");
             }
             var newJob = new Job() { Id = Guid.NewGuid(), Title = job, IsCompleted = false };
             _repository.Add(newJob);
@@ -48,7 +48,7 @@ namespace Application.Services
                     }
                     if (IsExisted(job))
                     {
-                        throw new JobExistedException($"Job \"{job}\" is existed");
+                        throw new ExistedException($"Job \"{job}\" is existed");
                     }
                     jobCount.TryGetValue(job, out var count);
                     if (count > 0) 

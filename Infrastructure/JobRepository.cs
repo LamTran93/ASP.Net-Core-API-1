@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
-using Domain.Exceptions;
 using Domain.Models;
+using Domain.Exceptions;
 
 namespace Infrastructure
 {
@@ -44,14 +44,14 @@ namespace Infrastructure
         public void Update(Job updatedJob)
         {
             var job = _jobs.FirstOrDefault(job => job.Id.Equals(updatedJob.Id));
-            if (job == null) throw new JobNotFoundException();
+            if (job == null) throw new NotFoundException($"Job id {updatedJob.Id} not found");
             job.CopyFrom(updatedJob);
         }
 
         public void Delete(string id)
         {
             var job = _jobs.FirstOrDefault(job => job.Id.Equals(Guid.Parse(id)));
-            if (job == null) throw new JobNotFoundException();
+            if (job == null) throw new NotFoundException($"Job id {id} not found");
             _jobs.Remove(job);
         }
 
