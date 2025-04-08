@@ -4,23 +4,18 @@ using Domain.Exceptions;
 
 namespace Infrastructure
 {
-    public class JobRepository : IJobRepository
+    public class JobRepository(List<Job> jobs) : IJobRepository
     {
-        private List<Job> _jobs;
+        private readonly List<Job> _jobs = jobs;
 
-        public JobRepository(List<Job> jobs)
+        public void Add(Job newJob)
         {
-            _jobs = jobs;
+            _jobs.Add(newJob);
         }
 
-        public void Add(Job job)
+        public void AddRange(List<Job> newJobs)
         {
-            _jobs.Add(job);
-        }
-
-        public void AddRange(List<Job> jobs)
-        {
-            _jobs.AddRange(jobs);
+            _jobs.AddRange(newJobs);
         }
 
         public List<Job> GetJobs() { return _jobs; }
@@ -32,15 +27,13 @@ namespace Infrastructure
 
         public void Update(Job updatedJob)
         {
-            var job = _jobs.FirstOrDefault(job => job.Id.Equals(updatedJob.Id));
-            if (job == null) throw new NotFoundException($"Job id {updatedJob.Id} not found");
+            var job = _jobs.FirstOrDefault(job => job.Id.Equals(updatedJob.Id)) ?? throw new NotFoundException($"Job id {updatedJob.Id} not found");
             job.CopyFrom(updatedJob);
         }
 
         public void Delete(string id)
         {
-            var job = _jobs.FirstOrDefault(job => job.Id.Equals(Guid.Parse(id)));
-            if (job == null) throw new NotFoundException($"Job id {id} not found");
+            var job = _jobs.FirstOrDefault(job => job.Id.Equals(Guid.Parse(id))) ?? throw new NotFoundException($"Job id {id} not found");
             _jobs.Remove(job);
         }
 

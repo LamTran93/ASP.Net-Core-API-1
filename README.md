@@ -6,7 +6,7 @@ Test the project with Swagger: https://localhost:7067/swagger/index.html
 <h1>Structure</h1>
 
 - The app use the Clean Architecture. Project Reference: ASP.NET Core API #1 -> Infrastructure -> Application -> Domain.
-- Public contract with these interfaces: IJobRepository, IJobService.
+- Public contract with these interfaces: IJobRepository, IJobService, IPersonRepository, IPersonService.
 - Using DI and IoC to inject service into controller.
 
 <img src="https://devblogs.microsoft.com/ise/wp-content/uploads/sites/55/2024/06/clean-arch.png" />

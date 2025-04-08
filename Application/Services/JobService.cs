@@ -4,19 +4,13 @@ using Application.Interfaces;
 
 namespace Application.Services
 {
-    public class JobService : IJobServices
+    public class JobService(IJobRepository repository) : IJobServices
     {
-        private readonly IJobRepository _repository;
-
-        public JobService(IJobRepository repository)
-        {
-            _repository = repository;
-        }
+        private readonly IJobRepository _repository = repository;
 
         public void UpdateJob(string id, Job job)
         {
-            var existingJob = _repository.GetById(id);
-            if (existingJob == null) throw new NotFoundException();
+            var existingJob = _repository.GetById(id) ?? throw new NotFoundException();
             existingJob.Title = job.Title;
             existingJob.IsCompleted = job.IsCompleted;
         }
@@ -25,7 +19,7 @@ namespace Application.Services
         {
             if (!IsValidated(job))
             {
-                throw new InvalidJobException($"Job \"{job}\" is invalid");
+                throw new InvalidException($"Job \"{job}\" is invalid");
             }
             if (IsExisted(job))
             {
@@ -44,15 +38,15 @@ namespace Application.Services
                 {
                     if (!IsValidated(job))
                     {
-                        throw new InvalidJobException($"Job \"{job}\" is invalid");
+                        throw new InvalidException($"Job \"{job}\" is invalid");
                     }
                     if (IsExisted(job))
                     {
                         throw new ExistedException($"Job \"{job}\" is existed");
                     }
                     jobCount.TryGetValue(job, out var count);
-                    if (count > 0) 
-                        throw new DuplicatedJobException($"Job \"{job}\" is duplicated");
+                    if (count > 0)
+                        throw new DuplicatedException($"Job \"{job}\" is duplicated");
                     else jobCount.Add(job.Trim(), 1);
                     return new Job() { Id = Guid.NewGuid(), Title = job, IsCompleted = false };
                 })
@@ -74,7 +68,10 @@ namespace Application.Services
                 {
                     _repository.Delete(id);
                 }
-                catch { }
+
+                catch
+                { // Ignore if 1 job is not found
+                }
             }
         }
 
@@ -94,7 +91,7 @@ namespace Application.Services
             return _repository.Any(job => job.Title.Trim().Equals(trimmedJobTitle, StringComparison.OrdinalIgnoreCase));
         }
 
-        private bool IsValidated(string jobTitle)
+        private static bool IsValidated(string jobTitle)
         {
             return !string.IsNullOrEmpty(jobTitle) && jobTitle.Length > 3;
         }

@@ -7,39 +7,41 @@ namespace ASP.Net_Core_API__1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TasksController : ControllerBase
+    [Produces("application/json")]
+    public class TasksController(IJobServices jobServices) : ControllerBase
     {
-        private readonly IJobServices _jobServices;
-
-        public TasksController(IJobServices jobServices)
-        {
-            _jobServices = jobServices;
-        }
+        private readonly IJobServices _jobServices = jobServices;
 
         [HttpGet]
-        public IActionResult GetTasks()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTasks()
         {
             var jobs = _jobServices.GetJobs().Select(job => new JobDTO(job)).ToList();
-            return Ok(jobs);
+            return await Task.FromResult(Ok(jobs));
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetTask(string id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTask(string id)
         {
             var job = _jobServices.GetById(id);
             if (job == null) return BadRequest();
-            return Ok(new JobDTO(job));
+            return await Task.FromResult(Ok(new JobDTO(job)));
         }
 
         [HttpPost]
-        public IActionResult CreateTask(string job)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> CreateTask(string job)
         {
             try
             {
                 var newJob = _jobServices.Create(job);
-                return CreatedAtAction("GetTask", new { id = newJob.Id.ToString() }, new JobDTO(newJob));
+                return await Task.FromResult(CreatedAtAction("GetTask", new { id = newJob.Id.ToString() }, new JobDTO(newJob)));
             }
-            catch (InvalidJobException)
+            catch (InvalidException)
             {
                 return BadRequest("Invalid job");
             }
@@ -50,13 +52,15 @@ namespace ASP.Net_Core_API__1.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateTask(string id, [FromBody] JobDTO job)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateTask(string id, [FromBody] JobDTO job)
         {
             if (id != job.Id) return BadRequest("Id not matched");
             try
             {
                 _jobServices.UpdateJob(id, job.ToJob());
-                return NoContent();
+                return await Task.FromResult(NoContent());
             }
             catch (NotFoundException)
             {
@@ -65,12 +69,14 @@ namespace ASP.Net_Core_API__1.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteTask(string id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteTask(string id)
         {
             try
             {
                 _jobServices.Delete(id);
-                return NoContent();
+                return await Task.FromResult(NoContent());
             }
             catch (NotFoundException)
             {
@@ -79,14 +85,17 @@ namespace ASP.Net_Core_API__1.Controllers
         }
 
         [HttpPost("bulk")]
-        public IActionResult CreateTasks([FromBody] List<string> jobs)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> CreateTasks([FromBody] List<string> jobs)
         {
             try
             {
                 var addedJobs = _jobServices.CreateJobs(jobs);
-                return Ok(addedJobs.Select(job => new JobDTO(job)).ToList());
+                return await Task.FromResult(Ok(addedJobs.Select(job => new JobDTO(job)).ToList()));
             }
-            catch (InvalidJobException ex)
+            catch (InvalidException ex)
             {
                 return BadRequest($"Invalid job: {ex.Message}");
             }
@@ -94,17 +103,18 @@ namespace ASP.Net_Core_API__1.Controllers
             {
                 return Conflict($"Job already exists: {ex.Message}");
             }
-            catch (DuplicatedJobException ex)
+            catch (DuplicatedException ex)
             {
                 return BadRequest($"Duplicated job: {ex.Message}");
             }
         }
 
         [HttpDelete("bulk")]
-        public IActionResult DeleteTasks([FromBody] List<string> idList)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> DeleteTasks([FromBody] List<string> idList)
         {
             _jobServices.DeleteJobs(idList);
-            return NoContent();
+            return await Task.FromResult(NoContent());
         }
     }
 }
