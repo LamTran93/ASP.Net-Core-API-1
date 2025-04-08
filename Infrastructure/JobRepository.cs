@@ -8,20 +8,9 @@ namespace Infrastructure
     {
         private List<Job> _jobs;
 
-        public JobRepository()
+        public JobRepository(List<Job> jobs)
         {
-            _jobs = [
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 1", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 2", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 3", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 4", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 5", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 6", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 7", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 8", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 9", IsCompleted = false},
-                new Job(){ Id = Guid.NewGuid(), Title = "Task number 10", IsCompleted = false}
-                ];
+            _jobs = jobs;
         }
 
         public void Add(Job job)

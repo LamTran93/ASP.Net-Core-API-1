@@ -30,7 +30,24 @@ namespace Application.Services
 
         public List<Person> Filter(FilterOptions options)
         {
+            IEnumerable<Person> result = _personRepository.GetPersons();
 
+            if (options.NameFilter)
+            {
+                result = result.Where(p => p.FirstName.Contains(options.Name) || p.LastName.Contains(options.Name));
+            }
+
+            if (options.GenderFilter)
+            {
+                result = result.Where(p => p.Gender == options.Gender);
+            }
+
+            if (options.BirthPlaceFilter)
+            {
+                result = result.Where(p => p.BirthPlace.Contains(options.BirthPlace));
+            }
+
+            return [.. result];
         }
     }
 }
